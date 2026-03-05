@@ -24,7 +24,7 @@ class CategoriaCreate(CategoriaBase):
 class CategoriaResponse(CategoriaBase):
     id:int
     class Config:
-        orm_mode = True
+       from_attributes = True
 
 class UsuarioBase(BaseModel):
     nombre : str
@@ -40,4 +40,4 @@ class UsuarioResponse(UsuarioBase):
     es_admin : bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
