@@ -23,7 +23,7 @@ class CategoriaCreate(CategoriaBase):
 
 class CategoriaResponse(CategoriaBase):
     id:int
-    class config:
+    class Config:
         orm_mode = True
 
 class UsuarioBase(BaseModel):

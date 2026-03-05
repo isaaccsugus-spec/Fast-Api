@@ -1,11 +1,15 @@
 from sqlalchemy.orm import Session
-import models, schemas , utils
-from sqlalchemy import or_
+import models, schemas, utils
 
-# --- PRODUCTOS ---
+# ==========================================
+#                 PRODUCTOS
+# ==========================================
 
 def obtener_productos(db: Session):
     return db.query(models.Producto).all()
+
+def obtener_producto(db: Session, producto_id: int):
+    return db.query(models.Producto).filter(models.Producto.id == producto_id).first()
 
 def crear_producto(db: Session, producto: schemas.ProductoCreate):
     db_producto = models.Producto(**producto.model_dump())
@@ -18,7 +22,7 @@ def actualizar_producto(db: Session, producto_id: int, producto: schemas.Product
     db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
     if db_producto:
         for var, value in vars(producto).items():
-            setattr(db_producto, var, value) if value else None
+            setattr(db_producto, var, value) if value is not None else None
         db.commit()
         db.refresh(db_producto)
     return db_producto
@@ -31,11 +35,15 @@ def eliminar_producto(db: Session, producto_id: int):
     return db_producto
 
 
-# --- CATEGORÍAS ---
+# ==========================================
+#                 CATEGORÍAS
+# ==========================================
 
-# NUEVO: Función para obtener/listar todas las categorías
 def obtener_categorias(db: Session):
     return db.query(models.Categoria).all()
+
+def obtener_categoria(db: Session, categoria_id: int):
+    return db.query(models.Categoria).filter(models.Categoria.id == categoria_id).first()
 
 def crear_categoria(db: Session, categoria: schemas.CategoriaCreate): 
     db_categoria = models.Categoria(nombre=categoria.nombre)
@@ -44,13 +52,54 @@ def crear_categoria(db: Session, categoria: schemas.CategoriaCreate):
     db.refresh(db_categoria)
     return db_categoria
 
-# ususarios
+def actualizar_categoria(db: Session, categoria_id: int, categoria: schemas.CategoriaCreate):
+    db_categoria = db.query(models.Categoria).filter(models.Categoria.id == categoria_id).first()
+    if db_categoria:
+        db_categoria.nombre = categoria.nombre
+        db.commit()
+        db.refresh(db_categoria)
+    return db_categoria
 
-def obtener_usuario_por_email(db:Session , email:str) -> Usuario | None:
-    return db.query(Usuario).filter(Usuario.email == email).first
+def eliminar_categoria(db: Session, categoria_id: int):
+    db_categoria = db.query(models.Categoria).filter(models.Categoria.id == categoria_id).first()
+    if db_categoria:
+        db.delete(db_categoria)
+        db.commit()
+    return db_categoria
 
 
-def obtener_usuario_por_email(db:Session , usuario_id:str) -> Usuario | None:
-    return db.query(Usuario).filter(Usuario.id == email).first
+# ==========================================
+#                 USUARIOS
+# ==========================================
 
-def crear_usuario
+def obtener_usuarios(db: Session):
+    return db.query(models.Usuario).all()
+
+def obtener_usuario(db: Session, usuario_id: int):
+    return db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+
+def obtener_usuario_por_email(db: Session, email: str):
+    return db.query(models.Usuario).filter(models.Usuario.email == email).first()
+
+def crear_usuario(db: Session, usuario: schemas.UsuarioCreate):
+    # Hasheamos la contraseña usando tu función de utils.py
+    contrasena_hasheada = utils.hash_password(usuario.password)
+    
+    # Creamos el modelo usando la contraseña hasheada (¡NUNCA la original en texto plano!)
+    db_usuario = models.Usuario(
+        nombre=usuario.nombre,
+        email=usuario.email,
+        hashed_password=contrasena_hasheada,
+        es_admin=usuario.es_admin
+    )
+    db.add(db_usuario)
+    db.commit()
+    db.refresh(db_usuario)
+    return db_usuario
+
+def eliminar_usuario(db: Session, usuario_id: int):
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if db_usuario:
+        db.delete(db_usuario)
+        db.commit()
+    return db_usuario
