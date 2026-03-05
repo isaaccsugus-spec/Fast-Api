@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel , EmailStr
 from typing import Optional
 
 class ProductoBase(BaseModel):
@@ -14,3 +14,30 @@ class ProductoResponse(ProductoBase):
     id: int
     class Config:
         from_attributes = True
+
+class CategoriaBase(BaseModel):
+    nombre : str
+
+class CategoriaCreate(CategoriaBase):
+    pass
+
+class CategoriaResponse(CategoriaBase):
+    id:int
+    class config:
+        orm_mode = True
+
+class UsuarioBase(BaseModel):
+    nombre : str
+    email : EmailStr
+
+class UsuarioCreate(UsuarioBase):
+    password:str
+
+    es_admin : bool =False
+
+class UsuarioResponse(UsuarioBase):
+    id:int
+    es_admin : bool
+
+    class Config:
+        orm_mode = True
