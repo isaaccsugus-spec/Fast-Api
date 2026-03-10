@@ -117,3 +117,24 @@ def obtener_mi_perfil(usuario_actual = Depends(get_current_user)):
     # Esta ruta requiere un token válido proporcionado en la cabecera.
     # Si llega hasta aquí, devuelve los datos del usuario logueado.
     return usuario_actual
+
+# ==========================================
+#                 PEDIDOS
+# ==========================================
+
+# CREAR PEDIDO: Solo usuarios logueados
+@app.post("/pedidos", response_model=schemas.PedidoResponse)
+def crear_pedido(
+    pedido: schemas.PedidoCreate, 
+    db: Session = Depends(get_db),
+    usuario_actual = Depends(get_current_user) # Exigimos el Token JWT
+):
+    return crud.crear_pedido(db=db, pedido=pedido, usuario_id=usuario_actual.id)
+
+# VER MIS PEDIDOS: Solo usuarios logueados
+@app.get("/mis-pedidos", response_model=list[schemas.PedidoResponse])
+def mis_pedidos(
+    db: Session = Depends(get_db),
+    usuario_actual = Depends(get_current_user)
+):
+    return crud.obtener_pedidos_usuario(db=db, usuario_id=usuario_actual.id)

@@ -103,3 +103,34 @@ def eliminar_usuario(db: Session, usuario_id: int):
         db.delete(db_usuario)
         db.commit()
     return db_usuario
+
+# ==========================================
+#                 PEDIDOS
+# ==========================================
+
+def crear_pedido(db: Session, pedido: schemas.PedidoCreate, usuario_id: int):
+    # 1. Creamos la "factura" en blanco
+    db_pedido = models.Pedido(usuario_id=usuario_id)
+    db.add(db_pedido)
+    db.commit()
+    db.refresh(db_pedido)
+    
+    # 2. Recorremos el carrito y añadimos las "líneas" a la factura
+    for item in pedido.items:
+        db_detalle = models.DetallePedido(
+            pedido_id=db_pedido.id,
+            producto_id=item.producto_id,
+            cantidad=item.cantidad
+        )
+        db.add(db_detalle)
+        
+        # EXTRAS PARA EL 10: ¡Aquí restarías el stock del producto!
+        # producto = db.query(models.Producto).filter(models.Producto.id == item.producto_id).first()
+        # producto.en_stock = False (o restar cantidad si tuvieras una columna 'cantidad_stock')
+        
+    db.commit()
+    db.refresh(db_pedido)
+    return db_pedido
+
+def obtener_pedidos_usuario(db: Session, usuario_id: int):
+    return db.query(models.Pedido).filter(models.Pedido.usuario_id == usuario_id).all()
